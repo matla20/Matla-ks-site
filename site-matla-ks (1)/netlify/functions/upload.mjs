@@ -1,4 +1,5 @@
 import { getStore } from '@netlify/blobs';
+import { checkPassword } from '../lib/auth.mjs';
 
 // Guarda e serve as fotos enviadas pelo painel /admin usando Netlify Blobs.
 // POST /api/upload  -> { password, data (base64), type, ext }  => { url }
@@ -28,8 +29,7 @@ export default async (req) => {
     } catch {
       return new Response('Bad request', { status: 400 });
     }
-    const password = process.env.ADMIN_PASSWORD || 'matla2026';
-    if (!body || body.password !== password) {
+    if (!body || !(await checkPassword(body.password))) {
       return new Response('Unauthorized', { status: 401 });
     }
     if (!body.data || typeof body.data !== 'string') {

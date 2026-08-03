@@ -12,11 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useContent } from "@/content/ContentContext";
-import {
-  SiteContent,
-  CatalogItem,
-  CATEGORIES,
-} from "@/content/defaultContent";
+import { SiteContent, CatalogItem } from "@/content/defaultContent";
 
 /* ---------- helpers ---------- */
 
@@ -181,6 +177,61 @@ export default function Admin() {
   const [loggingIn, setLoggingIn] = useState(false);
 
   const [draft, setDraft] = useState<SiteContent | null>(null);
+  const [newCategory, setNewCategory] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [newPass2, setNewPass2] = useState("");
+  const [passMsg, setPassMsg] = useState<
+    { kind: "ok" | "err"; text: string } | null
+  >(null);
+  const [changingPass, setChangingPass] = useState(false);
+
+  const handleChangePassword = async () => {
+    setPassMsg(null);
+    const nova = newPass.trim();
+    if (nova.length < 6) {
+      setPassMsg({
+        kind: "err",
+        text: "A nova senha precisa ter pelo menos 6 caracteres.",
+      });
+      return;
+    }
+    if (nova !== newPass2.trim()) {
+      setPassMsg({ kind: "err", text: "As duas senhas não são iguais." });
+      return;
+    }
+    setChangingPass(true);
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, newPassword: nova }),
+      });
+      if (res.ok) {
+        setPassword(nova);
+        setNewPass("");
+        setNewPass2("");
+        setPassMsg({
+          kind: "ok",
+          text: "Senha trocada! Use a nova senha no próximo acesso.",
+        });
+      } else if (res.status === 401) {
+        setPassMsg({ kind: "err", text: "A senha atual não confere." });
+      } else {
+        const j = await res.json().catch(() => null);
+        setPassMsg({
+          kind: "err",
+          text: j?.error || "Não consegui trocar a senha. Tente de novo.",
+        });
+      }
+    } catch {
+      setPassMsg({
+        kind: "err",
+        text: "A troca de senha só funciona no site publicado na Netlify.",
+      });
+    } finally {
+      setChangingPass(false);
+    }
+  };
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("catalogo");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<
@@ -275,6 +326,78 @@ export default function Admin() {
 
   const catalogEditor = (
     <div className="space-y-6">
+      {/* categorias */}
+      <div className="bg-[#111111] border border-white/10 rounded-2xl p-5 space-y-3">
+        <span className="text-white/40 text-xs uppercase tracking-wider">
+          Categorias do catálogo
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {data.categories.map((cat) => {
+            const inUse = data.catalog.some((c) => c.category === cat.id);
+            return (
+              <span
+                key={cat.id}
+                className="inline-flex items-center gap-2 text-sm border border-white/15 rounded-full pl-4 pr-2 py-1.5 text-white/80"
+              >
+                {cat.label}
+                <button
+                  onClick={() => {
+                    if (inUse) {
+                      window.alert(
+                        `Não dá para excluir "${cat.label}" porque ainda existem produtos nessa categoria. Mude a categoria desses produtos primeiro.`
+                      );
+                      return;
+                    }
+                    update({
+                      categories: data.categories.filter((c) => c.id !== cat.id),
+                    });
+                  }}
+                  className="text-white/30 hover:text-red-400 transition-colors p-1"
+                  title={`Excluir categoria ${cat.label}`}
+                >
+                  <Trash2 size={13} />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const label = newCategory.trim();
+            if (!label) return;
+            const id = label
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            if (!id || data.categories.some((c) => c.id === id)) {
+              window.alert("Essa categoria já existe.");
+              return;
+            }
+            update({ categories: [...data.categories, { id, label }] });
+            setNewCategory("");
+          }}
+          className="flex gap-2 max-w-sm"
+        >
+          <input
+            className={inputCls}
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            placeholder="Nova categoria (ex.: Camisetas)"
+          />
+          <button
+            type="submit"
+            className="flex items-center gap-1.5 text-sm text-white/70 border border-white/20 rounded-lg px-4 hover:text-white hover:border-white/40 transition-colors whitespace-nowrap"
+          >
+            <Plus size={14} /> Adicionar
+          </button>
+        </form>
+        <p className="text-[11px] text-white/40">
+          Lembre de clicar em "Salvar alterações" no topo depois de mexer aqui.
+        </p>
+      </div>
       {data.catalog.map((item, i) => (
         <div
           key={item.id}
@@ -343,7 +466,7 @@ export default function Admin() {
                   })
                 }
               >
-                {CATEGORIES.filter((c) => c.id !== "todos").map((c) => (
+                {data.categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.label}
                   </option>
@@ -568,6 +691,48 @@ export default function Admin() {
         configurar nada. Se preferir, também dá para colar o link (URL) de uma
         foto que já está na internet.
       </p>
+      <div className="border-t border-white/10 pt-4 space-y-3">
+        <h3 className="text-white/90 font-medium">Trocar senha do painel</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field label="Nova senha (mín. 6 caracteres)">
+            <input
+              type="password"
+              className={inputCls}
+              value={newPass}
+              onChange={(e) => setNewPass(e.target.value)}
+            />
+          </Field>
+          <Field label="Repita a nova senha">
+            <input
+              type="password"
+              className={inputCls}
+              value={newPass2}
+              onChange={(e) => setNewPass2(e.target.value)}
+            />
+          </Field>
+        </div>
+        <button
+          onClick={handleChangePassword}
+          disabled={changingPass}
+          className="flex items-center gap-2 text-sm bg-white text-black font-medium rounded-lg px-4 py-2 hover:bg-white/90 transition-colors disabled:opacity-60"
+        >
+          {changingPass && <Loader2 size={14} className="animate-spin" />}
+          Trocar senha
+        </button>
+        {passMsg && (
+          <p
+            className={`text-sm ${
+              passMsg.kind === "ok" ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            {passMsg.text}
+          </p>
+        )}
+        <p className="text-[11px] text-white/40">
+          Guarde a nova senha num lugar seguro — ela passa a valer na hora, em
+          qualquer aparelho.
+        </p>
+      </div>
       <div className="border-t border-white/10 pt-4">
         <button
           onClick={() => {

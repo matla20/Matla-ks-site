@@ -60,7 +60,13 @@ export interface CloudinarySettings {
   uploadPreset: string;
 }
 
+export interface Category {
+  id: string;
+  label: string;
+}
+
 export interface SiteContent {
+  categories: Category[];
   catalog: CatalogItem[];
   gallery: GalleryImage[];
   testimonials: TestimonialImage[];
@@ -78,6 +84,14 @@ export const CATEGORIES = [
 ];
 
 export const DEFAULT_CONTENT: SiteContent = {
+  categories: [
+    { id: "canecas", label: "Canecas" },
+    { id: "azulejos", label: "Azulejos" },
+    { id: "quadros", label: "Quadros" },
+    { id: "chaveiros", label: "Chaveiros" },
+    { id: "polaroids", label: "Polaroids" },
+    { id: "camisetas", label: "Camisetas" },
+  ],
   catalog: [
     {
       id: "mug-simple",

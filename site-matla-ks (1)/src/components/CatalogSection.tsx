@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useContent } from "@/content/ContentContext";
-import { CATEGORIES } from "@/content/defaultContent";
 
 export function CatalogSection() {
   const { content } = useContent();
@@ -10,6 +9,7 @@ export function CatalogSection() {
 
   const WHATSAPP_LINK = `https://wa.me/${content.footer.whatsappNumber}`;
   const CATALOG_ITEMS = content.catalog;
+  const CATEGORIES = [{ id: "todos", label: "Todos" }, ...content.categories];
 
   const filteredItems =
     activeCategory === "todos"

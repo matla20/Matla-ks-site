@@ -13,6 +13,10 @@ const API_URL = `${import.meta.env.BASE_URL}api/content`;
 function mergeContent(saved: Partial<SiteContent> | null): SiteContent {
   if (!saved || typeof saved !== "object") return DEFAULT_CONTENT;
   return {
+    categories:
+      Array.isArray(saved.categories) && saved.categories.length > 0
+        ? saved.categories
+        : DEFAULT_CONTENT.categories,
     catalog: Array.isArray(saved.catalog) ? saved.catalog : DEFAULT_CONTENT.catalog,
     gallery: Array.isArray(saved.gallery) ? saved.gallery : DEFAULT_CONTENT.gallery,
     testimonials: Array.isArray(saved.testimonials)

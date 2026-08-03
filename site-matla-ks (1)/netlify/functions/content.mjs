@@ -1,4 +1,5 @@
 import { getStore } from '@netlify/blobs';
+import { checkPassword, setPassword } from '../lib/auth.mjs';
 
 // Guarda o conteúdo editável do site (catálogo, galeria, depoimentos, rodapé)
 // no Netlify Blobs, para que as alterações feitas no painel /admin
@@ -21,9 +22,20 @@ export default async (req) => {
     } catch {
       return new Response('Bad request', { status: 400 });
     }
-    const password = process.env.ADMIN_PASSWORD || 'matla2026';
-    if (!body || body.password !== password) {
+    if (!body || !(await checkPassword(body.password))) {
       return new Response('Unauthorized', { status: 401 });
+    }
+    // Troca de senha
+    if (typeof body.newPassword === 'string') {
+      const nova = body.newPassword.trim();
+      if (nova.length < 6) {
+        return Response.json(
+          { ok: false, error: 'A nova senha precisa ter pelo menos 6 caracteres.' },
+          { status: 400 },
+        );
+      }
+      await setPassword(nova);
+      return Response.json({ ok: true });
     }
     // Apenas verificação de senha (login), sem salvar
     if (body.verify) {
