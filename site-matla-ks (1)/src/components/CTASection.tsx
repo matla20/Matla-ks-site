@@ -3,9 +3,15 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import ctaBg from "../../attached_assets/generated_images/cta_bg.png";
 
-const WHATSAPP_LINK = "https://wa.me/5577992015868";
+import { waLink } from "@/lib/whatsapp";
+import { useContent } from "@/content/ContentContext";
 
 export function CTASection() {
+  const { content } = useContent();
+  const WHATSAPP_LINK = waLink(
+    content.footer.whatsappNumber,
+    "Olá! Quero fazer um pedido personalizado com a MATLA KS. Pode me ajudar? 😊"
+  );
   return (
     <section className="relative py-32 md:py-48 overflow-hidden flex items-center justify-center">
       {/* Background Image */}

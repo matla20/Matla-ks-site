@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-const WHATSAPP_LINK = "https://wa.me/5577992015868";
+import { waLink, DEFAULT_WA_MESSAGE } from "@/lib/whatsapp";
+import { useContent } from "@/content/ContentContext";
 
 const NAV_LINKS = [
   { label: "Início", href: "#inicio" },
@@ -14,6 +15,8 @@ const NAV_LINKS = [
 ];
 
 export function Header() {
+  const { content } = useContent();
+  const WHATSAPP_LINK = waLink(content.footer.whatsappNumber, DEFAULT_WA_MESSAGE);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

@@ -3,9 +3,15 @@ import { motion, Variants, useMotionValue, useSpring, useTransform } from "frame
 import heroDesktop from "@assets/ChatGPT_Image_3_de_ago._de_2026,_11_26_16_1785767287003.png";
 import heroMobile from "@assets/ChatGPT_Image_3_de_ago._de_2026,_11_45_21_1785768343345.png";
 
-const WHATSAPP_LINK = "https://wa.me/5577992015868";
+import { waLink } from "@/lib/whatsapp";
+import { useContent } from "@/content/ContentContext";
 
 export function HeroSection() {
+  const { content } = useContent();
+  const WHATSAPP_LINK = waLink(
+    content.footer.whatsappNumber,
+    "Olá! Vi o site da MATLA KS e quero criar um presente personalizado. 😊"
+  );
   // Mouse parallax for the desktop image (depth effect)
   const imageWrapRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);

@@ -1,11 +1,12 @@
 import React from "react";
 import { Instagram, MapPin, Phone, Clock } from "lucide-react";
 import { useContent } from "@/content/ContentContext";
+import { waLink, DEFAULT_WA_MESSAGE } from "@/lib/whatsapp";
 
 export function Footer() {
   const { content } = useContent();
   const f = content.footer;
-  const whatsappLink = `https://wa.me/${f.whatsappNumber}`;
+  const whatsappLink = waLink(f.whatsappNumber, DEFAULT_WA_MESSAGE);
 
   const multiline = (text: string) =>
     text.split("\n").map((line, i, arr) => (

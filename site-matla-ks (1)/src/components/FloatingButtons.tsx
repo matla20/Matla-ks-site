@@ -3,9 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa"; // Using react-icons for WhatsApp logo
 
-const WHATSAPP_LINK = "https://wa.me/5577992015868";
+import { waLink, DEFAULT_WA_MESSAGE } from "@/lib/whatsapp";
+import { useContent } from "@/content/ContentContext";
 
 export function FloatingButtons() {
+  const { content } = useContent();
+  const WHATSAPP_LINK = waLink(content.footer.whatsappNumber, DEFAULT_WA_MESSAGE);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {

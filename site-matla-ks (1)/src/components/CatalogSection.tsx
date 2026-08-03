@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useContent } from "@/content/ContentContext";
+import { waLink, waProductMessage } from "@/lib/whatsapp";
 
 export function CatalogSection() {
   const { content } = useContent();
   const [activeCategory, setActiveCategory] = useState("todos");
 
-  const WHATSAPP_LINK = `https://wa.me/${content.footer.whatsappNumber}`;
+  const waNumber = content.footer.whatsappNumber;
   const CATALOG_ITEMS = content.catalog;
   const CATEGORIES = [{ id: "todos", label: "Todos" }, ...content.categories];
 
@@ -78,7 +79,7 @@ export function CatalogSection() {
                   {/* Hover overlay with button */}
                   <div className="absolute inset-0 bg-[#050505]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
                     <a
-                      href={WHATSAPP_LINK}
+                      href={waLink(waNumber, waProductMessage(item.title, item.price))}
                       target="_blank"
                       rel="noreferrer"
                       className="translate-y-4 group-hover:translate-y-0 transition-all duration-300 px-6 py-3 bg-white text-black font-medium rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 flex items-center gap-2"
@@ -101,7 +102,7 @@ export function CatalogSection() {
                     {item.description}
                   </p>
                   <a
-                    href={WHATSAPP_LINK}
+                    href={waLink(waNumber, waProductMessage(item.title, item.price))}
                     target="_blank"
                     rel="noreferrer"
                     className="text-white/70 font-medium text-sm flex items-center gap-2 hover:text-white transition-colors uppercase tracking-wider"
